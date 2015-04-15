@@ -1,0 +1,31 @@
+# nova-rootwrap command filters for network nodes
+# This file should be owned by (and only-writeable by) the root user
+
+[Filters]
+# nova/network/freebsd_net.py: 'ifconfig', 'lo0', 'alias', ..
+ifconfig: CommandFilter, ifconfig, root
+
+# nova/network/freebsd_net.py: 'route', ..
+route: CommandFilter, route, root
+
+# nova/network/linux_net.py: 'dhcp_release', dev, address, mac_address
+#dhcp_release: CommandFilter, dhcp_release, root
+
+# nova/network/freebsd_net.py: 'kill', ..
+#kill_dnsmasq: KillFilter, root, /usr/local/sbin/dnsmasq, -9, -HUP
+kill: CommandFilter, kill, root
+
+# nova/network/freebsd_net.py: dnsmasq call
+dnsmasq: EnvFilter, env, root, CONFIG_FILE=, NETWORK_ID=, dnsmasq
+
+# nova/network/freebsd_net.py: 'sysctl', ....
+sysctl: CommandFilter, sysctl, root
+
+# nova/network/freebsd_net.py: 'arping', '-U', network_ref['dhcp_server'],..
+arping: CommandFilter, arping, root
+
+# nova/network/freebsd_net.py: 'ipfw', ....
+ipfw: CommandFilter, ipfw, root
+
+# nova/network/freebsd_net.py: 'kldload', ....
+kldload: CommandFilter, kldload, root

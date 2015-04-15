@@ -1,0 +1,66 @@
+# nova-rootwrap command filters for compute nodes
+# This file should be owned by (and only-writeable by) the root user
+
+[Filters]
+# nova/virt/disk/mount/api.py: 'mount', mapped_device
+# nova/virt/disk/api.py: 'mount', '-o', 'bind', src, target
+# nova/virt/xenapi/vm_utils.py: 'mount', '-t', 'ext2,ext3,ext4,reiserfs'..
+# nova/virt/configdrive.py: 'mount', device, mountdir
+# nova/virt/libvirt/volume.py: 'mount', '-t', 'sofs' ...
+mount: CommandFilter, mount, root
+
+# nova/virt/disk/mount/api.py: 'umount', mapped_device
+# nova/virt/disk/api.py: 'umount' target
+# nova/virt/xenapi/vm_utils.py: 'umount', dev_path
+# nova/virt/configdrive.py: 'umount', mountdir
+umount: CommandFilter, umount, root
+
+# nova/virt/disk/vfs/localfs.py: 'tee', canonpath
+tee: CommandFilter, tee, root
+
+# nova/virt/disk/vfs/localfs.py: 'mkdir', canonpath
+mkdir: CommandFilter, mkdir, root
+
+# nova/virt/disk/vfs/localfs.py: 'chown'
+# nova/virt/libvirt/connection.py: 'chown', os.getuid( console_log
+# nova/virt/libvirt/connection.py: 'chown', os.getuid( console_log
+# nova/virt/libvirt/connection.py: 'chown', 'root', basepath('disk')
+# nova/utils.py: 'chown', owner_uid, path
+chown: CommandFilter, chown, root
+
+# nova/virt/disk/vfs/localfs.py: 'chmod'
+chmod: CommandFilter, chmod, root
+
+# nova/virt/libvirt/connection.py: 'dd', if=%s % virsh_output, ...
+dd: CommandFilter, dd, root
+
+# nova/virt/xenapi/vm_utils.py: fdisk %(dev_path)s
+fdisk: CommandFilter, fdisk, root
+
+# nova/network/linux_net.py: 'dhcp_release', dev, address, mac_address
+#dhcp_release: CommandFilter, dhcp_release, root
+
+# nova/network/linux_net.py: 'kill', '-9', pid
+# nova/network/linux_net.py: 'kill', '-HUP', pid
+#kill_dnsmasq: KillFilter, root, /usr/sbin/dnsmasq, -9, -HUP
+kill: CommandFilter, kill, root
+
+# nova/network/linux_net.py: dnsmasq call
+dnsmasq: EnvFilter, env, root, CONFIG_FILE=, NETWORK_ID=, dnsmasq
+
+# nova/virt/xenapi/vm_utils.py: 'mkfs'
+mkfs: CommandFilter, mkfs, root
+
+# nova/virt/disk/vfs/localfs.py: 'readlink', '-e'
+readlink: CommandFilter, readlink, root
+
+# nova/virt/disk/api.py: 'touch', target
+touch: CommandFilter, touch, root
+
+# nova/virt/bhyve/bhyve.py
+bhyveload: CommandFilter, bhyveload, root
+grub-bhyve: CommandFilter, grub-bhyve, root
+bhyve: CommandFilter, /usr/sbin/bhyve, root
+bhyvectl: CommandFilter, bhyvectl, root
+tmux: CommandFilter, tmux, root
+screen:  CommandFilter, screen, root
