@@ -1,3 +1,5 @@
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
 # Copyright 2012 Nicira Networks, Inc
 # All Rights Reserved.
 #
@@ -14,6 +16,7 @@
 #    under the License.
 
 from nova.network import linux_net
+from nova.network import freebsd_net
 from nova.openstack.common import log as logging
 from nova import utils
 
@@ -70,6 +73,63 @@ class L3Driver(object):
 
     def teardown(self):
         raise NotImplementedError()
+
+
+class FreeBSDNetL3(L3Driver):
+    """L3 driver that uses freebsd_net as the backend."""
+    def __init__(self):
+        self.initialized = False
+
+    def initialize(self, **kwargs):
+        if self.initialized:
+            return
+        LOG.debug("Initializing freebsd_net L3 driver")
+        fixed_range = kwargs.get('fixed_range', False)
+        networks = kwargs.get('networks', None)
+        if not fixed_range and networks is not None:
+            for network in networks:
+                self.initialize_network(network['cidr'])
+        else:
+            freebsd_net.init_host()
+        freebsd_net.ensure_metadata_ip()
+        freebsd_net.metadata_forward()
+        self.initialized = True
+
+    def is_initialized(self):
+        return self.initialized
+
+    def initialize_network(self, cidr):
+        freebsd_net.init_host(cidr)
+
+    def initialize_gateway(self, network_ref):
+        mac_address = utils.generate_mac_address()
+        dev = freebsd_net.plug(network_ref, mac_address,
+                    gateway=(network_ref['gateway'] is not None))
+        freebsd_net.initialize_gateway_device(dev, network_ref)
+
+    def remove_gateway(self, network_ref):
+        freebsd_net.unplug(network_ref)
+
+    def add_floating_ip(self, floating_ip, fixed_ip, l3_interface_id,
+                        network=None):
+        freebsd_net.ensure_floating_forward(floating_ip, fixed_ip,
+                                          l3_interface_id, network)
+        freebsd_net.bind_floating_ip(floating_ip, l3_interface_id)
+
+    def remove_floating_ip(self, floating_ip, fixed_ip, l3_interface_id,
+                           network=None):
+        freebsd_net.unbind_floating_ip(floating_ip, l3_interface_id)
+        freebsd_net.remove_floating_forward(floating_ip, fixed_ip,
+                                          l3_interface_id, network)
+
+    def add_vpn(self, public_ip, port, private_ip):
+        freebsd_net.ensure_vpn_forward(public_ip, port, private_ip)
+
+    def remove_vpn(self, public_ip, port, private_ip):
+        pass
+
+    def teardown(self):
+        pass
 
 
 class LinuxNetL3(L3Driver):
