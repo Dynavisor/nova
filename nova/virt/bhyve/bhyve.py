@@ -266,7 +266,7 @@ class Bhyve:
         LOG.debug("bhyve_cmd: %s" % ([_BHYVE] + self._default_params + self._pci_params + pci_opts \
             + ['-m',  str(vm_config.mem_size)] + [vm_config.name]))
 
-        return [_BHYVE] + self._default_params + self._pci_params + ["-s","31,lpc", "-l", "com1,/dev/nmdm%dA" % (int((vm_config.name).split("-")[-1])-1,)] \
+        return [_BHYVE] + self._default_params + self._pci_params + ["-s","31,lpc", "-l", "com1,/dev/nmdm%dA" % (int("0x%s" % (vm_config.name).split("-")[-1],0)-1,)] \
             + pci_opts \
             + ['-m',  str(vm_config.mem_size)] + [vm_config.name]
 
